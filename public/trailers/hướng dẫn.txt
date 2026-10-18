@@ -1,0 +1,3 @@
+- Không được đổi tên thư mục Trailers
+- Tên video bắt buộc phải đặt là v1.mp4, v2.mp4, v3.mp4,... tương ứng với nút Video 1, Video 2, Video 3,... trên Host
+- Tên âm thanh bắt buộc phải đặt là s1.mp3, s2.mp3, s3.mp3,... tương ứng với nút Sound 1, Sound 2, Sound 3,... trên Host

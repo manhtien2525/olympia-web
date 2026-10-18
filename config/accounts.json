@@ -1,0 +1,48 @@
+[
+  {
+    "username": "host",
+    "password": "123",
+    "role": "host",
+    "name": "Ban Tổ Chức"
+  },
+  {
+    "username": "mc",
+    "password": "123",
+    "role": "mc",
+    "name": "MC Dẫn Chương Trình"
+  },
+  {
+    "username": "thisinh1",
+    "password": "123",
+    "role": "thi_sinh",
+    "studentIndex": 0,
+    "name": "Thí sinh 1"
+  },
+  {
+    "username": "thisinh2",
+    "password": "123",
+    "role": "thi_sinh",
+    "studentIndex": 1,
+    "name": "Thí sinh 2"
+  },
+  {
+    "username": "thisinh3",
+    "password": "123",
+    "role": "thi_sinh",
+    "studentIndex": 2,
+    "name": "Thí sinh 3"
+  },
+  {
+    "username": "thisinh4",
+    "password": "123",
+    "role": "thi_sinh",
+    "studentIndex": 3,
+    "name": "Thí sinh 4"
+  },
+  {
+    "username": "viewer",
+    "password": "123",
+    "role": "viewer",
+    "name": "Màn Hình Sân Khấu"
+  }
+]
