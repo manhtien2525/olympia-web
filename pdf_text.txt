@@ -1,0 +1,332 @@
+
+
+-- 1 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 2
+MỤC LỤC
+I. GIỚI THIỆU .............................................................................................................................. 3
+II. THAO TÁC TRÊN ỨNG DỤNG .................................................................................................. 3
+1. NHẬP ĐỀ VÀ KHỞI TẠO SERVER ......................................................................................... 3
+A. NHẬP ĐỀ .......................................................................................................................... 3
+B. KHỞI TẠO SERVER ........................................................................................................... 4
+2. GỬI ĐỀ VÀ QUẢN LÝ CLIENT (STUDENT, MC, VIEWER) ...................................................... 5
+3. THAO TÁC TRÊN CÁC PHẦN THI.......................................................................................... 6
+A. SẢNH CHỜ ....................................................................................................................... 6
+B. XEM ĐỀ THI ..................................................................................................................... 6
+C. BẢNG ĐIỂM HÌNH ẢNH ................................................................................................... 7
+D. KHỞI ĐỘNG ..................................................................................................................... 8
+E. VƯỢT CHƯỚNG NGẠI VẬT .............................................................................................. 9
+F. TĂNG TỐC ...................................................................................................................... 10
+G. VỀ ĐÍCH ......................................................................................................................... 11
+H. CÂU HỎI PHỤ ................................................................................................................ 12
+I. HIỂN THỊ BẢNG ĐIỂM CÁ NHÂN APP THÍ SINH ............................................................. 13
+III. MỘT SỐ LỖI VÀ CÁCH SỬ DỤNG Radmin VPN ................................................................ 15
+1. MỘT SỐ LỖI....................................................................................................................... 15
+A. KHÔNG THỂ KHỞI TẠO SERVER ..................................................................................... 15
+B. ỨNG DỤNG KHÔNG HIỂN THỊ ĐÚNG TỈ LỆ MÀN HÌNH ................................................. 16
+C. HIỂN THỊ SAI THỜI GIAN ĐÁP ÁN PHẦN THI TĂNG TỐC ................................................ 17
+2. CÁCH SỬ DỤNG Radmin VPN ........................................................................................... 18
+IV. LIÊN HỆ .............................................................................................................................. 19
+
+-- 2 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 3
+I. GIỚI THIỆU
+- Các ứng dụng gồm:
++ Olympia_Host: thư mục chứa ứng dụng dành cho kỹ thuật viên.
++ Olympia_MC: thư mục chứa ứng dụng dành cho MC.
++ Olympia_ThiSinh: thư mục chứa ứng dụng dành cho thí sinh.
++ Olympia_Viewer: thư mục chứa ứng dụng để trình chiếu cho khán giả.
+- Mở các file có đuôi .exe có logo trong thư mục trên để chạy ứng dụng, nếu
+Windows yêu cài đặt .NET 8 thì tải về theo hướng dẫn của Windows, sau đó
+cài đặt file .NET 8 vừa tải về rồi chạy app Olympia như bình thường.
+- Lưu ý: không được xóa bất kì file nào hoặc thư mục trong các thư mục
+Olympia_Host, Olympia_MC, Olympia_ThiSinh, Olympia_Viewer vì đó là
+những tài nguyên cần thiết để chạy ứng dụng được bình thường.
+II. THAO TÁC TRÊN ỨNG DỤNG
+1. NHẬP ĐỀ VÀ KHỞI TẠO SERVER
+A. NHẬP ĐỀ
+
+-- 3 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 4
+- Nhấn vào nạp đề thi để mở hộp thoại, sau đó chọn thư mục chứa 3 mục:
+file Đề thi.xlsx, thư mục Media và StudentImage.
+- Đợi 1 lúc đề load vào, sau đó sẽ hiện thông báo nạp đề thành công.
+B. KHỞI TẠO SERVER
+- Chọn loại kết nối để chọn loại trạng thái mạng đang sử dụng, chú ý phải
+chọn đúng nếu không app có thể sẽ bị lỗi và văng.
+• Mạng Wi-Fi: khi Server và Client đều kết nối chung 1 mạng Wi-Fi
+không dây.
+• Radmin VPN: khi Server và Client ở xa nhau, phải dùng mạng LAN ảo
+Radmin VPN.
+• Mạng LAN: khi Server và Client kết nối chung với nhau qua Mạng
+LAN.
+• Khuyến khích sử dụng mạng tốc độ cao để tốc độ truyền tín hiệu
+được nhanh nhất.
+
+-- 4 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 5
+2. GỬI ĐỀ VÀ QUẢN LÝ CLIENT (STUDENT, MC, VIEWER)
+- Khi nạp đề thành công thì nút Gửi đề và quản lý Client sẽ có hiệu lực,
+nhấn vào sẽ hiện danh sách tất cả các Client đang kết nối.
+- Đây cũng là nơi để Server kiểm soát số lượng Client đang kết nối.
+- Có số phần trăm đề đã được gửi để kiểm soát Client đã và chưa được
+gửi đề.
+- Kick nếu muốn ngắt kết nối với Client nào đó.
+- Tick 1: khi gửi đề lần đầu qua máy đó thì chọn Tick 1 để gửi.
+- Tick 2: Khi đã gửi đề thành công nhưng trong lúc cuộc thi diễn ra, máy
+đó bị văng do mất kết nối thì khi kết nối lại thì sẽ gửi đề qua bằng Tick 2.
+- Nếu gửi đề bằng Tick 1 thì phải đóng server trước khi gửi đề.
+- Lưu ý: Chỉ được gửi đề 1 lần qua mỗi máy, trong khi gửi đề không thao
+tác gì thêm.
+
+-- 5 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 6
+3. THAO TÁC TRÊN CÁC PHẦN THI
+A. SẢNH CHỜ
+- Đây là sảnh chờ, khi kết thúc 1 phần thi hoặc lúc MC giao lưu với học
+sinh thì sẽ chọn vào Tab này.
+- Khi chọn Tab này thì bên Client và Server sẽ không hiện gì, một giao diện
+trống.
+- Tất cả âm thanh trong ứng dụng sẽ tắt khi chọn giao diện này.
+B. XEM ĐỀ THI
+- Giao diện này sẽ hiện tất dữ liệu của đề thi được nạp vào.
+- Giúp bên ban kỹ thuật và ban ra đề có 1 cái nhìn toàn cảnh trước khi bắt
+đầu cuộc thi nhằm phát hiện sai sót trong đề nếu có.
+- Nếu câu hỏi có hình ảnh, âm thanh hoặc video thì sẽ có thể xem trực
+tiếp trên App Host.
+
+-- 6 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 7
+C. BẢNG ĐIỂM HÌNH ẢNH
+
+-- 7 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 8
+- Giao diện tổng kết điểm hình ảnh này chỉ có trên App Viewer, còn App
+Thí Sinh và App MC đều chỉ hiện bảng điểm thường.
+- Trước khi chọn ảnh thí sinh thì cần gửi đề qua App Viewer trước, vì ảnh
+thí sinh nằm trong thư mục StudentImage của thư mục đề, nếu gửi đề
+sau thì chỉ cần chọn lại ảnh thí sinh 1 lần nữa.
+- Chỉ được chọn ảnh trong thư mục StudentImage nếu không bên App
+Viewer sẽ không có đường dẫn ảnh hợp lệ.
+- Có thể cập nhật tên trường bằng cách nhập tên trường của 4 thí sinh và
+nhấn Cập nhật trên trường.
+- Có nút Phát nhạc kết thúc để kết thúc trận đấu.
+D. KHỞI ĐỘNG
+- Cửa sổ chọn thí sinh, nhấn vào sẽ xổ xuống và chọn lần lượt các thí sinh
+hoặc là lượt thi chung.
+- Nút Reset vòng thi để reset lại vòng thi KHỞI ĐỘNG.
+
+-- 8 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 9
+- Nút 3 chấm là âm thanh khoảng trống, trường hợp nếu không có MC thì
+kỹ thuật viên có thể đảm nhiệm luôn nhiệm vụ MC.
+- Nút phát nhạc sẽ có thể bấm được, tức là hiện sáng lên khi mà câu hỏi
+đó có âm thanh.
+- Khung hình chữ nhật góc dưới bên trái để hiện hình ảnh nếu câu hỏi đó
+có hình ảnh.
+- Tương tự các nút đúng sai để ghi điểm.
+- Nút Mở giành quyền sẽ có hiệu lực trong phần thi chung, kỹ thuật viên
+sẽ mở nút giành quyền của thí sinh khi bấm vào nút này.
+- Nút chuyển câu hỏi, khi câu hỏi đầu tiên được bắt đầu thì lúc đó âm
+thanh suy nghĩ cũng sẽ được phát xuyên suốt tất cả câu hỏi của phần thi
+đó, nếu đến câu hỏi cuối cùng của phần thi đó (câu thứ 6 nếu thi riêng,
+câu thứ 12 nếu thi chung) thì khi người kỹ thuật viên ghi điểm cho câu
+hỏi đó thì âm thanh suy nghĩ sẽ được tắt.
+- -Nút phát nhạc hết lượt được dùng khi thí sinh đó hoàn thành phần thi.
+E. VƯỢT CHƯỚNG NGẠI VẬT
+
+-- 9 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 10
+- Nút Hiện hàng ngang sẽ hiện giao diện VCNV bên Viewer và thí sinh.
+- Các nút hiện câu hỏi sẽ hiện câu hỏi tương ứng của từng hàng.
+- Các nút hiện hình ảnh sẽ hiện ảnh tương ứng của từng hàng.
+- Tương tự với các nút ẩn hàng ngang.
+- Nút phát bài hát sẽ sáng khi câu hỏi đó có đoạn nhạc.
+- Khi nhấn đếm thời gian thì bên thí sinh mới có thể nhập đáp án và gửi
+đáp án được.
+- Khi hết thời gian thì hiện đáp án của thí sinh bằng nút Hiện/ẩn câu trả
+lời của thí sinh, phải ẩn giao diện này khi chuyển phần thi khác.
+- Khi hiện đáp án, có thể nhấn tick chọn các thí sinh trả lời đúng và nhấn
+ghi điểm, sau đó nhấn thêm nút Hiện/ẩn câu trả lời của thí sinh một lần
+nữa để tắt giao diện câu trả lời thí sinh.
+- Nếu có thí sinh bấm chuông trả lời chướng ngại vật thì nút Ghi điểm trả
+lời đúng CNV sẽ sáng, tick chọn thí sinh trả lời đúng rồi ghi điểm.
+- Nhấn Loại nếu thí sinh đó trả lời sai chướng ngại vật, lúc đó bên thí sinh
+tương ứng sẽ không thể trả lời được nữa trong xuyên suốt phần thi
+VCNV.
+F. TĂNG TỐC
+
+-- 10 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 11
+- Giao diện này tương đối dễ dùng trong các phần thi.
+- Đếm giờ thì bên thí sinh sẽ có thể nhập đáp án và gửi đáp án.
+- Khi hết giờ thì có thể nhấn hiện câu trả lời, lúc đó đáp án của thí sinh sẽ
+được sắp xếp theo thời giao mà đáp án cuối cùng của thí sinh ấy được
+gửi, phải ẩn giao diện câu trả lời khi chuyển các phần thi khác.
+- Tick chọn vào các thí sinh trả lời đúng, App Host sẽ tự động tính toán
+điểm cho các thí sinh dựa và thời gian trả lời của thí sinh.
+G. VỀ ĐÍCH
+- Phần này sẽ có 1 sảnh tạm vì thứ tự thi của các thí sinh phụ thuộc vào số
+điểm.
+- Đầu tiên nhấn nút Giao diện chọn gói để hiện giao diện chọn gói câu hỏi
+ở bên App Viewer, (chỉ có App Viewer mới hiện giao diện này).
+- Tick vào các gói câu hỏi rồi nhấn nút Xác nhận để gửi gói câu hỏi đi, sau
+đó thì nút Giao diện chọn gói và nút Xác nhận sẽ bị ẩn đi để tránh kỹ
+thuật viên nhấn lộn.
+
+-- 11 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 12
+- Các nút Chuyển câu, Đúng, Sai, Đếm giờ cũng tương tự như các phần
+khác.
+- Nút Hiện chú thích (góc phải trên giao diện hiện câu hỏi) để hiện chú
+thích cho câu hỏi đó nếu có.
+- Nút Ngôi sao hy vọng phải được nhấn chọn trước khi câu hỏi được bắt
+đầu.
+- Nút Đếm giờ giành quyền được nhấn nếu thí sinh không trả lời được
+hoặc trả lời sai câu hỏi.
+- Khi thí sinh giành quyền, giao diện sẽ hiển thị màu xanh. Kỹ thuật viên
+chọn Đúng hoặc Sai, App Host sẽ tự tính điểm.
+- Trường hợp thí sinh chọn ngôi sao hy vọng và đang bị thí sinh khác giành
+quyền trả lời nhưng trả lời sai, kỹ thuật viên nhấn nút Sai ở cả hai bên để
+trừ điểm hai thí sinh.
+H. CÂU HỎI PHỤ
+- Chọn thí sinh tham gia phần thi này bằng cách nhấn vào Combobox
+Chọn thí sinh.
+
+-- 12 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 13
+- Nhấn nút Xác nhận, lúc này bên giao diện Viewer sẽ chỉ hiện những thí
+sinh nào tham gia phần thi này, còn bên giao diện Thí sinh thì vẫn hiện
+đủ bốn người nhưng mà chỉ những ai tham mới giành quyền được.
+- Bên thí sinh tham gia phần thi này thì nút Giành quyền luôn được mở,
+nếu thí sinh nhấn chuông trước khi có hiệu lệnh bắt đầu (tức là bên Host
+nhấn nút đếm thời gian) thì bên thí sinh sẽ không thể giành quyền được
+trong câu hỏi đó nữa và sẽ hiện một thông báo đã giành quyền khi chưa
+có hiệu lệnh bắt đầu.
+- Tất cả các giao diện sẽ hiện thời gian nếu có thí sinh nào giành quyền khi
+chưa có hiệu lệnh nhằm tăng tính minh bạch, vì số liệu thời gian này là
+riêng biệt từng máy nên khi bắt đầu phần thi này, các máy phải được
+đồng bộ thời gian như nhau.
+- Khi bên Host có hiệu lệnh bắt đầu (là khi nhấn nút đếm giờ), nếu có thí
+sinh nào giành quyền thì thời gian sẽ tạm dừng, nếu thí sinh đấy trả lời
+đúng thì chương trình sẽ kết thúc luôn, nếu không trả lời đúng thì Host
+sẽ nhất nút Sai, lúc đó thời gian sẽ sẽ tiếp tục và các thí sinh còn lại có
+thể giành quyền bình thường.
+I. HIỂN THỊ BẢNG ĐIỂM CÁ NHÂN APP THÍ SINH
+
+-- 13 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 14
+- Ở App Thí Sinh, sau khi kết nối với Server thì nhấn vào nút Bảng điểm cá
+nhân để hiện bảng điểm cá nhân, nhấn một lần nữa để tắt giao diện
+bảng điểm cá nhân.
+- Kết nối nối màn hình rời với máy tính thí sinh, sau đó nhấp tổ hợp
+Windows + P để hiện bảng này.
+- Chọn Extend, rồi quay lại giao diện bảng điểm cá nhân của thí sinh, nhấn
+giữ tổ hợp Windows + Shift rồi nhấn mũi tên để di chuyển bảng điểm cá
+nhân sang màn màn hình rời vừa kết nối.
+
+-- 14 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 15
+III. MỘT SỐ LỖI VÀ CÁCH SỬ DỤNG Radmin VPN
+1. MỘT SỐ LỖI
+A. KHÔNG THỂ KHỞI TẠO SERVER
+- Vì tính chất đặc thù của App Host nên không thể khởi tạo nhiều server
+trên cùng một loại mạng (WiFi, Radmin VPN, LAN).
+- Lý do cụ thể là đang có App Host khác chạy ngầm, chỉ cần mở Task
+manager rồi tìm tới Olympia_Host, sau đó chuột phải chọn Endtask để
+tắt chương trình.
+
+-- 15 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 16
+B. ỨNG DỤNG KHÔNG HIỂN THỊ ĐÚNG TỈ LỆ MÀN HÌNH
+- Do nhiều máy có tỉ lệ màn hình và độ phân giải khác nhau nên sẽ hiển thị
+khác nhau.
+
+-- 16 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 17
+- Vào cài đặt màn hình trong phần cài đặt của Windows, chọn độ phân giải
+cao nhất và tỉ lệ phù hợp để hiển thị các thành phần bình thường (so
+sánh với ảnh được đăng trên page).
+C. HIỂN THỊ SAI THỜI GIAN ĐÁP ÁN PHẦN THI TĂNG TỐC
+- Thời gian sẽ hiện dấu phẩy thay vì dấu chấm, khiến thời gian hiển thị sai
+và đảo lộn thứ tự thí sinh gửi đáp án.
+- Lỗi này xảy ra khi máy sử dụng ngôn ngữ Tiếng Việt.
+- Cách khắc phục: Chuyển ngôn ngữ máy thành Tiếng Anh, sau đó kiểm tra
+nếu thời gian hiển thị có dấu chấm thay vì dấu phẩy như hình thì đã khắc
+phục thành công.
+
+-- 17 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 18
+2. CÁCH SỬ DỤNG Radmin VPN
+- Mục đích để tổ chức các cuộc thi training online.
+- Sử dụng một công cụ tạo mạng cục bộ ảo là Radmin VPN
+(https://www.radmin-vpn.com/vi/).
+- Trong giao diện Radmin VPN, chọn Create Network và tạo một mạng
+riêng cho server trận đấu.
+- Các thiết bị khác trong trận đấu sử dụng Radmin VPN, chọn Join
+Network và cùng kết nối vào mạng đã tạo.
+- Sau khi thao tác mở Server trong App Host, các thiết bị còn lại trong ứng
+dụng sử dụng IP bên Server để làm IP kết nối.
+
+-- 18 of 19 --
+
+© 2025 Nguyễn Văn Giang
+HƯỚNG DẪN SỬ DỤNG ỨNG DỤNG GC – APP 19
+IV. LIÊN HỆ
+Trên đây là toàn bộ hướng dẫn thao tác để vận hành ứng dụng GC App - Ứng
+Dụng Olympia. Nếu có bất kì bất cập nào trong việc sử dụng ứng dụng, vui lòng
+liên hệ với tác giả thông qua:
+• Gửi mail về địa chỉ: gcapp2025@gmail.com
+• Liên lạc thông qua page: https://www.facebook.com/olympiagcapp
+GC App - Ứng Dụng Olympia là ứng dụng miễn phí, phát triển phi lợi nhuận.
+Nếu bạn thấy ứng dụng hữu ích và muốn đóng góp để tác giả có kinh phí duy trì
+và phát triển các phiên bản sau này, vui lòng tham khảo các kênh ủng hộ dưới
+đây: DONATE
+Xin chân thành cảm ơn Quý đơn vị đã tin tưởng và sử dụng GC App - Ứng Dụng
+Olympia.
+Nếu hài lòng với trải nghiệm sử dụng, chúng tôi rất mong Quý đơn vị có thể giới
+thiệu ứng dụng đến nhiều đơn vị khác, đồng thời tag hoặc đăng bài trên trang
+Facebook GC App - Ứng Dụng Olympia như một lời ghi nhận.
+Trong trường hợp chưa hài lòng với trải nghiệm, kính mong Quý đơn vị vui lòng
+liên hệ qua các kênh hỗ trợ đã cung cấp để được hướng dẫn chi tiết.
+Tác giả luôn sẵn sàng hỗ trợ kỹ thuật trong quá trình sử dụng qua email hoặc
+trang Facebook chính thức của GC App - Ứng Dụng Olympia.
+Nghệ An, ngày 17 tháng 11 năm 2025
+Tác giả
+Nguyễn Văn Giang
+
+-- 19 of 19 --
+

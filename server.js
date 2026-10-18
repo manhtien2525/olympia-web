@@ -38,10 +38,11 @@ const examFilePath = path.join(__dirname, 'data', 'default_exam.xlsx');
 let examData = parseExamExcel(examFilePath);
 
 const gameState = {
-  currentRound: 'lobby', // 'lobby', 'starting', 'obstacle', 'acceleration', 'finish', 'summary'
-  subRound: '',
+  // GC App Tab/Round names: 'lobby', 'preview', 'scoreboard_image', 'starting', 'obstacle', 'acceleration', 'finish', 'sub_question'
+  currentRound: 'lobby',
+  subRound: 'ts0', // for starting: 'ts0', 'ts1', 'ts2', 'ts3', 'common'
   currentQuestion: null,
-  activeStudent: null, // Thí sinh đang có lượt (vòng Khởi động hoặc Về đích)
+  activeStudent: 0, // Thí sinh đang có lượt
   timer: {
     running: false,
     timeLeft: 0,
@@ -50,20 +51,34 @@ const gameState = {
   },
   buzzer: {
     open: false,
-    buzzedStudents: [] // [{ studentIndex, time, elapsedMs }]
+    buzzedStudents: [], // [{ studentIndex, time, elapsedMs }]
+    winner: null
   },
   students: [
-    { index: 0, name: 'Thí sinh 1', school: 'THPT Chuyên Hà Nội - Amsterdam', score: 0, connected: false, answer: '', answerTime: null, star: false },
-    { index: 1, name: 'Thí sinh 2', school: 'THPT Chuyên Lê Hồng Phong', score: 0, connected: false, answer: '', answerTime: null, star: false },
-    { index: 2, name: 'Thí sinh 3', school: 'THPT Chuyên Lam Sơn', score: 0, connected: false, answer: '', answerTime: null, star: false },
-    { index: 3, name: 'Thí sinh 4', school: 'THPT Chuyên Quốc Học Huế', score: 0, connected: false, answer: '', answerTime: null, star: false }
+    { index: 0, name: 'Thí sinh 1', school: 'THPT Chuyên Hà Nội - Amsterdam', score: 0, connected: false, answer: '', answerTime: null, star: false, eliminated: false, fault: false },
+    { index: 1, name: 'Thí sinh 2', school: 'THPT Chuyên Lê Hồng Phong', score: 0, connected: false, answer: '', answerTime: null, star: false, eliminated: false, fault: false },
+    { index: 2, name: 'Thí sinh 3', school: 'THPT Chuyên Lam Sơn', score: 0, connected: false, answer: '', answerTime: null, star: false, eliminated: false, fault: false },
+    { index: 3, name: 'Thí sinh 4', school: 'THPT Chuyên Quốc Học Huế', score: 0, connected: false, answer: '', answerTime: null, star: false, eliminated: false, fault: false }
   ],
   obstacle: {
-    currentObstacleIndex: 0,
-    revealedRows: [],
-    imageRevealed: false
+    rowsVisible: false,
+    selectedRowId: null,
+    revealedRows: [], // list of row IDs revealed
+    imageRevealed: false,
+    eliminatedStudents: [] // Thí sinh bị loại khỏi phần thi CNV
   },
-  accelerationAnswers: [], // [{ studentIndex, answer, elapsedMs }]
+  accelerationAnswers: [], // [{ studentIndex, studentName, answer, time }]
+  showAnswersToViewer: false, // Hiện câu trả lời lên viewer
+  finish: {
+    showPackageUI: false,
+    selectedPackage: [], // [20, 20, 30]
+    currentQuestionIndex: 0,
+    isStealTurn: false // Đang trong 5 giây giành quyền
+  },
+  subQuestion: {
+    activeStudents: [0, 1, 2, 3], // Những thí sinh tham gia câu hỏi phụ
+    faultStudents: [] // Thí sinh bấm chuông trước hiệu lệnh
+  },
   examData: examData
 };
 
@@ -90,7 +105,6 @@ function startTimer(seconds) {
       if (gameState.timer.timeLeft <= 0) {
         stopTimer();
         io.emit('timer:ended');
-        io.emit('sound:play', { sound: 'timeout' });
       }
     } else {
       stopTimer();
@@ -109,7 +123,7 @@ function stopTimer() {
 
 function resetTimer(seconds) {
   stopTimer();
-  gameState.timer.timeLeft = seconds || gameState.timer.maxTime || 0;
+  gameState.timer.timeLeft = seconds !== undefined ? seconds : (gameState.timer.maxTime || 0);
   io.emit('timer:tick', {
     timeLeft: gameState.timer.timeLeft,
     maxTime: gameState.timer.maxTime
@@ -124,7 +138,6 @@ app.post('/api/login', (req, res) => {
     return res.status(401).json({ success: false, message: 'Sai tên đăng nhập hoặc mật khẩu!' });
   }
 
-  // Set user cookie
   res.cookie('olympia_user', JSON.stringify({
     username: user.username,
     role: user.role,
@@ -209,28 +222,41 @@ io.on('connection', (socket) => {
     socket.emit('game:state', gameState);
   });
 
-  // Host Controls
+  // Host Controls: Tabs & Rounds
   socket.on('host:set-round', ({ round, subRound, activeStudent }) => {
     gameState.currentRound = round;
-    gameState.subRound = subRound || '';
+    if (subRound !== undefined) gameState.subRound = subRound;
     if (activeStudent !== undefined) gameState.activeStudent = activeStudent;
+
     gameState.currentQuestion = null;
     gameState.accelerationAnswers = [];
+    gameState.showAnswersToViewer = false;
     gameState.buzzer.open = false;
     gameState.buzzer.buzzedStudents = [];
+    gameState.buzzer.winner = null;
     stopTimer();
+
+    // If lobby, stop all sound effects
+    if (round === 'lobby') {
+      io.emit('sound:stop-all');
+    }
+
     broadcastState();
   });
 
   socket.on('host:set-question', (question) => {
     gameState.currentQuestion = question;
     gameState.accelerationAnswers = [];
+    gameState.showAnswersToViewer = false;
     gameState.buzzer.buzzedStudents = [];
+    gameState.buzzer.winner = null;
     broadcastState();
   });
 
+  // Timer controls
   socket.on('host:start-timer', ({ seconds }) => {
     startTimer(seconds);
+    io.emit('timer:started', { seconds });
   });
 
   socket.on('host:stop-timer', () => {
@@ -241,9 +267,11 @@ io.on('connection', (socket) => {
     resetTimer(seconds);
   });
 
+  // Buzzer controls
   socket.on('host:open-buzzer', () => {
     gameState.buzzer.open = true;
     gameState.buzzer.buzzedStudents = [];
+    gameState.buzzer.winner = null;
     io.emit('buzzer:opened');
     broadcastState();
   });
@@ -256,11 +284,13 @@ io.on('connection', (socket) => {
 
   socket.on('host:reset-buzzer', () => {
     gameState.buzzer.buzzedStudents = [];
+    gameState.buzzer.winner = null;
     gameState.buzzer.open = false;
     io.emit('buzzer:reset');
     broadcastState();
   });
 
+  // Score adjustments
   socket.on('host:update-score', ({ studentIndex, delta }) => {
     if (gameState.students[studentIndex]) {
       gameState.students[studentIndex].score += delta;
@@ -273,41 +303,117 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('host:toggle-star', ({ studentIndex }) => {
-    if (gameState.students[studentIndex]) {
-      gameState.students[studentIndex].star = !gameState.students[studentIndex].star;
-      if (gameState.students[studentIndex].star) {
-        io.emit('sound:play', { sound: 'star' });
+  // VCNV Controls
+  socket.on('host:obstacle-action', (payload) => {
+    const { action } = payload;
+    if (action === 'show-rows') {
+      gameState.obstacle.rowsVisible = true;
+      io.emit('sound:play', { sound: 'obstacle-rows-show' });
+    } else if (action === 'hide-rows') {
+      gameState.obstacle.rowsVisible = false;
+    } else if (action === 'select-row') {
+      gameState.obstacle.selectedRowId = payload.rowId;
+      io.emit('sound:play', { sound: 'obstacle-row-choose' });
+    } else if (action === 'reveal-row') {
+      if (!gameState.obstacle.revealedRows.includes(payload.rowId)) {
+        gameState.obstacle.revealedRows.push(payload.rowId);
+        io.emit('sound:play', { sound: 'obstacle-correct-row' });
       }
-      broadcastState();
+    } else if (action === 'reveal-image') {
+      gameState.obstacle.imageRevealed = true;
+      io.emit('sound:play', { sound: 'obstacle-correct-cnv' });
+    } else if (action === 'eliminate') {
+      const sIdx = payload.studentIndex;
+      if (!gameState.obstacle.eliminatedStudents.includes(sIdx)) {
+        gameState.obstacle.eliminatedStudents.push(sIdx);
+        gameState.students[sIdx].eliminated = true;
+      }
     }
-  });
-
-  socket.on('host:reveal-obstacle-row', ({ rowIndex }) => {
-    if (!gameState.obstacle.revealedRows.includes(rowIndex)) {
-      gameState.obstacle.revealedRows.push(rowIndex);
-      io.emit('sound:play', { sound: 'reveal-row' });
-      broadcastState();
-    }
-  });
-
-  socket.on('host:reveal-obstacle-image', () => {
-    gameState.obstacle.imageRevealed = true;
-    io.emit('sound:play', { sound: 'reveal-obstacle' });
     broadcastState();
   });
 
+  // Tăng Tốc Controls: show answers and calculate points
+  socket.on('host:toggle-show-answers', ({ show }) => {
+    gameState.showAnswersToViewer = Boolean(show);
+    if (gameState.showAnswersToViewer) {
+      io.emit('sound:play', { sound: 'accel-answers-show' });
+    }
+    broadcastState();
+  });
+
+  socket.on('host:award-acceleration', ({ correctIndices }) => {
+    // correctIndices: list of studentIndices who answered correctly, sorted by time
+    const pointsAward = [40, 30, 20, 10];
+    if (Array.isArray(correctIndices)) {
+      correctIndices.forEach((sIdx, rank) => {
+        if (gameState.students[sIdx] && pointsAward[rank]) {
+          gameState.students[sIdx].score += pointsAward[rank];
+        }
+      });
+      io.emit('sound:play', { sound: 'accel-correct' });
+      broadcastState();
+    }
+  });
+
+  // Về Đích Controls
+  socket.on('host:finish-action', (payload) => {
+    const { action } = payload;
+    if (action === 'show-package-ui') {
+      gameState.finish.showPackageUI = true;
+      io.emit('sound:play', { sound: 'finish-package-show' });
+    } else if (action === 'confirm-package') {
+      gameState.finish.showPackageUI = false;
+      gameState.finish.selectedPackage = payload.package; // [20, 20, 30]
+      gameState.finish.currentQuestionIndex = 0;
+      io.emit('sound:play', { sound: 'finish-package-choose' });
+    } else if (action === 'toggle-star') {
+      const sIdx = payload.studentIndex;
+      if (gameState.students[sIdx]) {
+        gameState.students[sIdx].star = !gameState.students[sIdx].star;
+        if (gameState.students[sIdx].star) {
+          io.emit('sound:play', { sound: 'finish-star-choose' });
+        }
+      }
+    } else if (action === 'start-steal-timer') {
+      // 5 seconds steal countdown
+      gameState.finish.isStealTurn = true;
+      gameState.buzzer.open = true;
+      gameState.buzzer.buzzedStudents = [];
+      gameState.buzzer.winner = null;
+      startTimer(5);
+      io.emit('sound:play', { sound: 'finish-5s' });
+    }
+    broadcastState();
+  });
+
+  // Câu Hỏi Phụ Controls
+  socket.on('host:sub-action', (payload) => {
+    const { action } = payload;
+    if (action === 'set-students') {
+      gameState.subQuestion.activeStudents = payload.students || [0, 1];
+      gameState.subQuestion.faultStudents = [];
+      gameState.buzzer.open = true; // Buzzer is always open in SubQuestion
+    } else if (action === 'reset-faults') {
+      gameState.subQuestion.faultStudents = [];
+    }
+    broadcastState();
+  });
+
+  // Sound & Trailer Triggers
   socket.on('host:play-sound', ({ sound }) => {
     io.emit('sound:play', { sound });
   });
 
-  socket.on('host:play-trailer', ({ trailer }) => {
-    io.emit('trailer:play', { trailer });
+  socket.on('host:stop-sound', ({ sound }) => {
+    io.emit('sound:stop', { sound });
   });
 
-  socket.on('host:show-answers', () => {
-    io.emit('acceleration:show-answers', { answers: gameState.accelerationAnswers });
-    io.emit('sound:play', { sound: 'show-answers' });
+  socket.on('host:stop-all-sounds', () => {
+    io.emit('sound:stop-all');
+  });
+
+  socket.on('host:play-trailer', ({ trailer }) => {
+    io.emit('trailer:play', { trailer });
   });
 
   // Contestant (Thí sinh) Events
@@ -315,6 +421,38 @@ io.on('connection', (socket) => {
     if (!currentUser || currentUser.role !== 'thi_sinh') return;
     const sIndex = currentUser.studentIndex;
     if (sIndex === undefined || sIndex === null) return;
+
+    // Check if eliminated in VCNV
+    if (gameState.currentRound === 'obstacle' && gameState.obstacle.eliminatedStudents.includes(sIndex)) {
+      socket.emit('buzzer:rejected', { reason: 'Bạn đã bị loại khỏi phần thi VCNV!' });
+      return;
+    }
+
+    // SubQuestion check: Buzzed BEFORE host started countdown
+    if (gameState.currentRound === 'sub_question') {
+      if (!gameState.subQuestion.activeStudents.includes(sIndex)) {
+        socket.emit('buzzer:rejected', { reason: 'Bạn không tham gia phần thi câu hỏi phụ!' });
+        return;
+      }
+      if (gameState.subQuestion.faultStudents.includes(sIndex)) {
+        socket.emit('buzzer:rejected', { reason: 'Bạn đã phạm quy câu hỏi này!' });
+        return;
+      }
+
+      if (!gameState.timer.running) {
+        // FAULT! Buzzed early before countdown started!
+        gameState.subQuestion.faultStudents.push(sIndex);
+        gameState.students[sIndex].fault = true;
+        io.emit('sub:fault', {
+          studentIndex: sIndex,
+          studentName: gameState.students[sIndex].name,
+          time: new Date().toLocaleTimeString()
+        });
+        io.emit('sound:play', { sound: 'starting-wrong' });
+        broadcastState();
+        return;
+      }
+    }
 
     if (!gameState.buzzer.open) {
       socket.emit('buzzer:rejected', { reason: 'Chuông chưa được mở!' });
@@ -335,8 +473,19 @@ io.on('connection', (socket) => {
 
       // First buzzer gets priority
       if (gameState.buzzer.buzzedStudents.length === 1) {
+        gameState.buzzer.winner = buzzEntry;
+
+        // Sound selection based on round
+        let soundName = 'starting-claim';
+        if (gameState.currentRound === 'obstacle') soundName = 'obstacle-claim';
+        else if (gameState.currentRound === 'finish') soundName = 'finish-claim';
+        else if (gameState.currentRound === 'sub_question') {
+          soundName = 'sub-claim';
+          stopTimer(); // In sub question, first buzz pauses timer!
+        }
+
         io.emit('buzzer:first-press', buzzEntry);
-        io.emit('sound:play', { sound: 'buzz' });
+        io.emit('sound:play', { sound: soundName });
       }
 
       broadcastState();
@@ -350,16 +499,17 @@ io.on('connection', (socket) => {
 
     const now = Date.now();
     const elapsedMs = gameState.timer.startTime ? now - gameState.timer.startTime : 0;
+    const formattedTime = (elapsedMs / 1000).toFixed(2);
 
     gameState.students[sIndex].answer = answer;
-    gameState.students[sIndex].answerTime = (elapsedMs / 1000).toFixed(2);
+    gameState.students[sIndex].answerTime = formattedTime;
 
     const existingIdx = gameState.accelerationAnswers.findIndex(a => a.studentIndex === sIndex);
     const ansItem = {
       studentIndex: sIndex,
       studentName: gameState.students[sIndex].name,
       answer: answer,
-      time: (elapsedMs / 1000).toFixed(2)
+      time: formattedTime
     };
 
     if (existingIdx >= 0) {
@@ -368,14 +518,14 @@ io.on('connection', (socket) => {
       gameState.accelerationAnswers.push(ansItem);
     }
 
-    // Sort by time
+    // Sort by submission time
     gameState.accelerationAnswers.sort((a, b) => parseFloat(a.time) - parseFloat(b.time));
 
-    // Notify Host and MC
+    // Notify Host & MC
     io.to('host_room').emit('ts:answer-received', ansItem);
     io.to('mc_room').emit('ts:answer-received', ansItem);
 
-    socket.emit('ts:answer-confirmed', { success: true, answer, time: ansItem.time });
+    socket.emit('ts:answer-confirmed', { success: true, answer, time: formattedTime });
   });
 
   socket.on('disconnect', () => {
@@ -389,14 +539,12 @@ io.on('connection', (socket) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`===============================================`);
-  console.log(`Olympia Game Show Web Server running at:`);
-  console.log(`Local: http://localhost:${PORT}`);
-  console.log(`Role Links:`);
-  console.log(`- Login:    http://localhost:${PORT}/`);
+  console.log(`====================================================`);
+  console.log(`Olympia GC App v2.4.3 Web Server is READY!`);
+  console.log(`Address: http://localhost:${PORT}`);
   console.log(`- Host:     http://localhost:${PORT}/host`);
   console.log(`- MC:       http://localhost:${PORT}/mc`);
   console.log(`- Thí Sinh: http://localhost:${PORT}/thisinh`);
   console.log(`- Viewer:   http://localhost:${PORT}/viewer`);
-  console.log(`===============================================`);
+  console.log(`====================================================`);
 });

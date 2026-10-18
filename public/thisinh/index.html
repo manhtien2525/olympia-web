@@ -3,83 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Olympia - Màn Hình Thí Sinh</title>
+  <title>GC App - Olympia Thí Sinh v2.4.3</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/audio-manager.js"></script>
   <style>
     body {
-      background-color: #070d19;
+      background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
       font-family: system-ui, -apple-system, sans-serif;
       touch-action: manipulation;
     }
-    .buzzer-glow {
-      box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
+    .buzzer-ready-pulse {
+      animation: buzzerGlow 0.8s infinite alternate;
     }
-    .buzzer-pressed-glow {
-      box-shadow: 0 0 50px rgba(245, 158, 11, 0.8);
+    @keyframes buzzerGlow {
+      0% { box-shadow: 0 0 15px #10b981; transform: scale(1); }
+      100% { box-shadow: 0 0 45px #10b981; transform: scale(1.03); }
     }
   </style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col justify-between p-3 sm:p-5 select-none">
 
-  <!-- Header -->
-  <header class="bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 flex items-center justify-between shadow-lg">
+  <!-- Contestant Header -->
+  <header class="bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 flex items-center justify-between shadow-xl">
     <div class="flex items-center gap-3">
-      <div id="studentAvatar" class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-base shadow">
-        1
+      <div class="w-12 h-14 bg-slate-950 border border-blue-500/40 rounded-xl overflow-hidden shrink-0 flex items-center justify-center shadow">
+        <img id="studentAvatarImg" src="/assets/gcapp/1.png" class="w-full h-full object-cover">
       </div>
       <div>
-        <h1 id="studentName" class="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
-          Thí Sinh 1
-          <span id="starIcon" class="hidden text-amber-400"><i class="fa-solid fa-star"></i></span>
+        <h1 id="studentName" class="text-sm sm:text-base font-black text-white flex items-center gap-1.5">
+          <span>Thí Sinh 1</span>
+          <img id="starIcon" src="/assets/gcapp/star.gif" class="hidden w-4 h-4 inline">
         </h1>
-        <p id="studentSchool" class="text-[11px] text-slate-400 truncate max-w-[180px] sm:max-w-none">THPT Chuyên...</p>
+        <p id="studentSchool" class="text-[11px] text-slate-400 truncate max-w-[170px] sm:max-w-none">THPT Chuyên...</p>
       </div>
     </div>
 
-    <!-- Student Score & Timer -->
+    <!-- Personal Score & Timer -->
     <div class="flex items-center gap-3">
       <div class="text-right">
-        <span class="text-[10px] text-slate-400 uppercase block font-semibold">Điểm số</span>
-        <span id="studentScore" class="text-2xl font-black text-amber-400 font-mono">0</span>
+        <span class="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">ĐIỂM SỐ</span>
+        <span id="studentScore" class="text-2xl sm:text-3xl font-black text-amber-400 font-mono">0</span>
       </div>
-      <div class="w-12 h-11 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-center">
-        <span id="tsTimer" class="text-xl font-black text-white font-mono">00</span>
+      <div class="w-13 h-12 px-3 bg-slate-950 border border-amber-400/80 rounded-xl flex items-center justify-center shadow-lg">
+        <span id="tsTimer" class="text-2xl font-black text-amber-400 font-mono">00</span>
       </div>
-      <button onclick="logout()" class="text-slate-500 hover:text-red-400 text-xs p-1" title="Đăng xuất">
+      <button onclick="openPersonalScoreWindow()" class="bg-blue-950/80 hover:bg-blue-800 border border-blue-500/30 text-blue-300 p-2 rounded-xl text-xs font-bold transition" title="Bảng điểm màn hình phụ">
+        <i class="fa-solid fa-up-right-from-square"></i>
+      </button>
+      <button onclick="logout()" class="text-slate-500 hover:text-red-400 p-1.5" title="Đăng xuất">
         <i class="fa-solid fa-right-from-bracket text-base"></i>
       </button>
     </div>
   </header>
 
+  <!-- Fault Alert Banner (Câu hỏi phụ phạm quy) -->
+  <div id="faultAlert" class="hidden my-2 p-3 bg-red-950/90 border-2 border-red-500 rounded-xl text-center text-xs text-red-200 font-bold animate-bounce shadow-xl">
+    <i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm mr-1"></i>
+    BẠN ĐÃ BẤM CHUÔNG KHI CHƯA CÓ HIỆU LỆNH (PHẠM QUY CÂU HỎI PHỤ)!
+  </div>
+
   <!-- Question Box -->
-  <section class="my-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl">
-      <div class="flex items-center justify-between text-xs font-semibold text-blue-400 mb-2">
-        <span id="tsQuestionRound">VÒNG THI</span>
-        <span id="tsQuestionPoints" class="hidden bg-blue-950 px-2 py-0.5 rounded text-blue-300 border border-blue-500/30">20đ</span>
+  <section class="my-3">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl">
+      <div class="flex items-center justify-between text-xs font-bold text-blue-400 mb-2">
+        <span id="tsQuestionRound">PHẦN THI</span>
+        <span id="tsQuestionPoints" class="hidden bg-blue-950 text-blue-300 border border-blue-500/30 px-2 py-0.5 rounded text-[11px]">20đ</span>
       </div>
-      <p id="tsQuestionText" class="text-base sm:text-xl font-bold leading-relaxed text-slate-100 min-h-[50px]">
+      <p id="tsQuestionText" class="text-base sm:text-xl font-bold leading-relaxed text-slate-100 min-h-[48px]">
         Chờ câu hỏi từ Ban Tổ Chức...
       </p>
     </div>
   </section>
 
-  <!-- Answer Input Box (For Acceleration & Obstacle) -->
-  <section id="answerInputSection" class="mb-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
-      <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-        <i class="fa-solid fa-keyboard text-blue-400"></i> Nhập câu trả lời của bạn:
+  <!-- Answer Typing Box (VCNV, Tăng tốc) -->
+  <section id="answerInputSection" class="mb-3">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 shadow-xl">
+      <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+        <span><i class="fa-solid fa-keyboard text-blue-400"></i> Nhập câu trả lời:</span>
+        <span id="typingStatus" class="text-[10px] text-slate-400 font-normal">Chỉ gửi được khi Host đếm giờ</span>
       </label>
       <form id="answerForm" class="flex gap-2">
-        <input type="text" id="answerInput" autocomplete="off" placeholder="Gõ câu trả lời tại đây..."
-          class="flex-1 px-4 py-3 bg-slate-950 border border-slate-700 rounded-xl text-base font-bold text-white uppercase focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder-slate-600">
+        <input type="text" id="answerInput" autocomplete="off" placeholder="Gõ câu trả lời..."
+          class="flex-1 px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-base font-bold text-white uppercase focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder-slate-600">
         <button type="submit" id="submitAnswerBtn"
-          class="px-5 py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold rounded-xl transition flex items-center gap-2 text-sm shadow-lg shadow-blue-600/30">
+          class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold rounded-xl transition flex items-center gap-1.5 text-xs shadow-lg shadow-blue-600/30">
           <span>GỬI</span>
-          <i class="fa-solid fa-paper-plane"></i>
+          <i class="fa-solid fa-paper-plane text-[11px]"></i>
         </button>
       </form>
       <div id="answerFeedback" class="hidden mt-2 p-2 bg-emerald-950/60 border border-emerald-500/40 rounded-lg text-xs text-emerald-300 flex items-center justify-between">
@@ -89,20 +100,20 @@
     </div>
   </section>
 
-  <!-- Big Buzzer Button Section -->
+  <!-- GIANT BUZZER BUTTON (GIÀNH QUYỀN) -->
   <section class="flex flex-col items-center justify-center my-auto py-2">
     <button id="bigBuzzerBtn" onclick="pressBuzzer()" disabled
-      class="w-48 h-48 sm:w-56 sm:h-56 rounded-full border-4 border-slate-700 bg-slate-800 flex flex-col items-center justify-center transition-all duration-150 active:scale-95 shadow-2xl relative cursor-not-allowed">
-      <i class="fa-solid fa-bell text-4xl sm:text-5xl text-slate-500 mb-2" id="buzzerIcon"></i>
-      <span id="buzzerLabel" class="text-sm sm:text-base font-black tracking-wider uppercase text-slate-500">
+      class="w-44 h-44 sm:w-56 sm:h-56 rounded-full border-4 border-slate-700 bg-slate-800 flex flex-col items-center justify-center transition-all duration-150 active:scale-95 shadow-2xl relative cursor-not-allowed">
+      <i class="fa-solid fa-bell text-4xl sm:text-5xl text-slate-500 mb-1.5" id="buzzerIcon"></i>
+      <span id="buzzerLabel" class="text-sm sm:text-base font-black tracking-wider uppercase text-slate-500 text-center px-2">
         CHUÔNG ĐANG KHÓA
       </span>
-      <span id="buzzerSubLabel" class="text-[10px] text-slate-400 mt-1">Chờ hiệu lệnh mở chuông</span>
+      <span id="buzzerSubLabel" class="text-[10px] text-slate-400 mt-1">Chờ hiệu lệnh</span>
     </button>
   </section>
 
   <!-- Bottom Other Contestants Mini Scores -->
-  <footer class="mt-4">
+  <footer class="mt-3">
     <div class="grid grid-cols-4 gap-2 text-center text-xs">
       <div id="miniTs0" class="p-2 bg-slate-900 border border-slate-800 rounded-xl">
         <p class="text-[10px] text-slate-400 truncate">TS 1</p>

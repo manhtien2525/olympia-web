@@ -28,12 +28,14 @@ function renderMCState() {
 
   // Round label
   const roundNames = {
-    'lobby': 'Chờ Trận Đấu (Lobby)',
+    'lobby': 'Sảnh Chờ Trận Đấu',
+    'preview': 'Xem Đề Thi',
+    'scoreboard_image': 'Bảng Điểm Hình Ảnh',
     'starting': 'Khởi Động',
     'obstacle': 'Vượt Chướng Ngại Vật',
     'acceleration': 'Tăng Tốc',
     'finish': 'Về Đích',
-    'summary': 'Tổng Kết'
+    'sub_question': 'Câu Hỏi Phụ'
   };
   document.getElementById('mcRoundLabel').textContent = roundNames[gameState.currentRound] || gameState.currentRound;
 
@@ -137,13 +139,11 @@ function renderStudentsScores() {
     }`;
     card.innerHTML = `
       <div class="flex items-center gap-2">
-        <span class="w-6 h-6 rounded-full bg-blue-900/60 text-blue-300 font-bold flex items-center justify-center text-xs">
-          ${idx + 1}
-        </span>
+        <img src="/assets/gcapp/${idx + 1}.png" class="w-5 h-5 object-contain">
         <div>
           <p class="font-bold text-white flex items-center gap-1">
             ${s.name}
-            ${s.star ? '<i class="fa-solid fa-star text-amber-400 text-[10px]"></i>' : ''}
+            ${s.star ? '<img src="/assets/gcapp/star.gif" class="w-3.5 h-3.5 inline">' : ''}
           </p>
           <p class="text-[10px] text-slate-400">${s.school}</p>
         </div>
